@@ -54,7 +54,7 @@ function load_mailbox(mailbox) {
   document.querySelector('#compose-view').style.display = 'none';
   
   // Show the mailbox name
-  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+  document.querySelector('#emails-view').innerHTML = `<h3><strong>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</strong></h3>`;
   
   // Fetch emails from the mailbox
   fetch(`/emails/${mailbox}`)
@@ -65,7 +65,7 @@ function load_mailbox(mailbox) {
     emails.forEach(element => {
       const email = document.createElement('div');
       email.className = 'email-item';
-      email.innerHTML = `<strong>${element.sender}</strong><br> <h4>${element.subject}</h4> <span>${element.timestamp}</span>`;
+      email.innerHTML = `<h4>${element.subject}</h4> <strong>${element.sender}</strong><br> <span>${element.timestamp}</span>`;
       document.querySelector('#emails-view').append(email);
       // Add click event to each email
       // to load email details
@@ -76,10 +76,10 @@ function load_mailbox(mailbox) {
         .then(emailDetails => {
           // Show email details
           document.querySelector('#emails-view').innerHTML = `
+            <h3> Subject: ${emailDetails.subject}</h3>
             <h4> Form: ${emailDetails.sender}</h4>
-            <h4> Subject: ${emailDetails.subject}</h4>
             <h4> Body: </h4> <br>
-            <p>${emailDetails.body}</p>
+            <p class='email-body'>${emailDetails.body}</p>
             <span>${emailDetails.timestamp}</span><br>
             <button id="reply-button">Reply</button>
             `;

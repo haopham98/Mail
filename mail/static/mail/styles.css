@@ -6,4 +6,32 @@ textarea {
     display: block;
     padding: 10px;
     border: 1px solid #000;
+    margin: 10px;
+    border-radius: 5px;
+}
+.email-item:focus {
+    outline: none;
+    border-color: #17e7e0;
+    box-shadow: 0 0 5px rgba(23, 231, 224, 0.5);
+}
+
+.email-item:hover {
+    background-color: #17e7e0;
+}
+
+.user-email {
+    font-size: 1.5em;
+    color: #0e57f5;
+    margin-bottom: 20px;
+}
+
+.email-body {
+    white-space: pre-wrap; /* Preserve whitespace and line breaks */
+    font-family: monospace; /* Use a monospace font for better readability */
+    color: #333;
+    border: #17e763;
+    height: 3em; /* Set a default text color */
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
 }
