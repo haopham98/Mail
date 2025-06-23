@@ -20,6 +20,31 @@ function compose_email() {
   document.querySelector('#compose-recipients').value = '';
   document.querySelector('#compose-subject').value = '';
   document.querySelector('#compose-body').value = '';
+
+  // Processing Submit Form
+  document.querySelector('#compose-form').addEventListener('submit', (event) =>{
+    event.preventDefault(); // prevent reload page
+
+    // get value in form
+    const recipients = document.querySelector('#compose-recipients').value;
+    const subject = document.querySelector('#compose-subject').value;
+    const body = document.querySelector('#compose-body').value;
+
+    // Send email
+    fetch('/emails', {
+      method: 'POST',
+      body: JSON.stringify({
+        recipients: recipients,
+        subject: subject,
+        body: body
+      })
+    })
+    .then(response => response.json())
+    .then(result => {
+      console.log(result)
+    })
+    
+  });
 }
 
 function load_mailbox(mailbox) {
@@ -27,7 +52,40 @@ function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
-
+  
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+  
+  // Fetch emails from the mailbox
+  fetch(`/emails/${mailbox}`)
+  .then(response => response.json())
+   // check data in emails
+  .then(emails => {
+    // Loop through emails and displa them
+    emails.forEach(element => {
+      const email = document.createElement('div');
+      email.className = 'email-item';
+      email.innerHTML = `<strong>${element.sender}</strong><br> <h4>${element.subject}</h4> <span>${element.timestamp}</span>`;
+      document.querySelector('#emails-view').append(email);
+      // Add click event to each email
+      // to load email details
+      email.addEventListener('click', () => {
+        // Load the email details
+        fetch(`/emails/${element.id}`)
+        .then(response => response.json())
+        .then(emailDetails => {
+          // Show email details
+          document.querySelector('#emails-view').innerHTML = `
+            <h4> Form: ${emailDetails.sender}</h4>
+            <h4> Subject: ${emailDetails.subject}</h4>
+            <h4> Body: </h4> <br>
+            <p>${emailDetails.body}</p>
+            <span>${emailDetails.timestamp}</span><br>
+            <button id="reply-button">Reply</button>
+            `;
+        })
+      })
+    });
+  })
 }
+
