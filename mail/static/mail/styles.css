@@ -11,7 +11,7 @@ textarea {
 }
 .email-item:focus {
     outline: none;
-    border-color: #17e7e0;
+    border-color: #067975;
     box-shadow: 0 0 5px rgba(23, 231, 224, 0.5);
 }
 

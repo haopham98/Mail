@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // By default, load the inbox
   load_mailbox('inbox');
+
+
+
 });
 
 function compose_email() {
@@ -26,6 +29,7 @@ function compose_email() {
     event.preventDefault(); // prevent reload page
 
     // get value in form
+    const sender = document.querySelector('#compose-sender').value;
     const recipients = document.querySelector('#compose-recipients').value;
     const subject = document.querySelector('#compose-subject').value;
     const body = document.querySelector('#compose-body').value;
@@ -34,17 +38,65 @@ function compose_email() {
     fetch('/emails', {
       method: 'POST',
       body: JSON.stringify({
+        sender: sender,
         recipients: recipients,
         subject: subject,
         body: body
       })
     })
-    .then(response => response.json())
-    .then(result => {
-      console.log(result)
-    })
-    
+    .then(load_mailbox('sent')) // Load sent mailbox after sending email
+    .catch(error => {
+      console.error('Error sending email:', error);
+    });
   });
+}
+
+function listArchieveEmail(mailbox) {
+    // Fetch the email which is archived
+    // display list of emails
+    fetch(`/emails/${mailbox}`)
+    .then(response => response.json())
+    .then(emails => {
+      console.log(emails);
+      emails.forEach(element => {
+        const email = renderEmailView(element);
+        email.className = 'email-item';
+        document.querySelector('#emails-view').append(email);
+        
+        // Add click event to each email to load email details
+        email.addEventListener('click', () => {
+          // Load the email details
+          fetch(`/emails/${element.id}`)
+          .then(response => response.json())
+          .then(emailDetails => {
+            // Show email details
+            
+            document.querySelector('#emails-view').innerHTML = `
+              <h3> Subject: ${emailDetails.subject}</h3>
+              <h4> Form: ${emailDetails.sender}</h4>
+              <h4> Body: </h4> <br>
+              <p class='email-body'>${emailDetails.body}</p>
+              <span>${emailDetails.timestamp}</span><br>
+              <button id="reply-button">Reply</button>
+              <button id="archive-button">${emailDetails.archived ? 'Unarchive' : 'Archive'}</button>
+              `;
+          })
+        })
+      })
+    })
+}
+
+
+function renderEmailView(email) {
+  // render email view
+  const emailElement = document.createElement('div');
+  emailElement.className = 'email-item';
+  emailElement.innerHTML = `
+    <h4><strong>${email.subject}</strong></h4>
+    <h5>${email.sender}</h5>
+    <span>${email.timestamp}</span>
+  `;
+  return emailElement
 }
 
 function load_mailbox(mailbox) {
@@ -56,36 +108,80 @@ function load_mailbox(mailbox) {
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3><strong>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</strong></h3>`;
   
-  // Fetch emails from the mailbox
-  fetch(`/emails/${mailbox}`)
-  .then(response => response.json())
-   // check data in emails
-  .then(emails => {
-    // Loop through emails and displa them
-    emails.forEach(element => {
-      const email = document.createElement('div');
-      email.className = 'email-item';
-      email.innerHTML = `<h4>${element.subject}</h4> <strong>${element.sender}</strong><br> <span>${element.timestamp}</span>`;
-      document.querySelector('#emails-view').append(email);
-      // Add click event to each email
-      // to load email details
-      email.addEventListener('click', () => {
-        // Load the email details
-        fetch(`/emails/${element.id}`)
-        .then(response => response.json())
-        .then(emailDetails => {
-          // Show email details
-          document.querySelector('#emails-view').innerHTML = `
-            <h3> Subject: ${emailDetails.subject}</h3>
-            <h4> Form: ${emailDetails.sender}</h4>
-            <h4> Body: </h4> <br>
-            <p class='email-body'>${emailDetails.body}</p>
-            <span>${emailDetails.timestamp}</span><br>
-            <button id="reply-button">Reply</button>
-            `;
+  if (mailbox === 'inbox') {
+    // Fetch emails from the mailbox
+    fetch(`/emails/${mailbox}`)
+    .then(response => response.json())
+    // check data in emails
+    .then(emails => {
+      // Loop through emails and displa them
+      emails.forEach(element => {
+        const email = renderEmailView(element);
+        email.className = 'email-item';
+        document.querySelector('#emails-view').append(email);
+        // Add click event to each email to load email details
+        email.addEventListener('click', () => {
+          // Load the email details
+          fetch(`/emails/${element.id}`)
+          .then(response => response.json())
+          .then(emailDetails => {
+            // Show email details
+            
+            document.querySelector('#emails-view').innerHTML = `
+              <h3> Subject: ${emailDetails.subject}</h3>
+              <h4> Form: ${emailDetails.sender}</h4>
+              <h5> To: ${emailDetails.recipients.join(', ')}</h5>
+              <h4> Body: </h4> <br>
+              <p class='email-body'>${emailDetails.body}</p>
+              <span>${emailDetails.timestamp}</span><br>
+              <button id="reply-button">Reply</button>
+              <button id="archive-button">${emailDetails.archived ? 'Unarchive' : 'Archive'}</button>
+              `;
+          })
         })
-      })
+      });
+    })
+    .catch(error => {
+      console.error('Error fetching emails:', error);
     });
-  })
+  }
+  else if (mailbox === 'archive') {
+    // List archived emails
+    listArchieveEmail(mailbox);
+  }
+  else if (mailbox === 'sent') {
+    fetch(`/emails/${mailbox}`)
+    .then(response => response.json())
+    .then(emails => {
+      emails.forEach(element => {
+        const email = renderEmailView(element);
+        email.className = 'email-item';
+        document.querySelector('#emails-view').append(email);
+        // Add click event to each email to load email details
+        email.addEventListener('click', () => {
+          // Load the email details
+          fetch(`/emails/${element.id}`)
+          .then(response => response.json())
+          .then(emailDetails => {
+            // Show email details
+            console.log(emailDetails);
+            document.querySelector('#emails-view').innerHTML = `
+              <h3> Subject: ${emailDetails.subject}</h3>
+              <h4> To: ${emailDetails.recipients.join(', ')}</h4>
+              <h4> Body: </h4> <br>
+              <p class='email-body'>${emailDetails.body}</p>
+              <span>${emailDetails.timestamp}</span><br>
+              <button id="reply-button">Reply</button>
+              `;
+          })
+        });
+      })
+    })
+  }
+
+  
 }
+
+
+
 
