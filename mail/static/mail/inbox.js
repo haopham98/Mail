@@ -38,7 +38,6 @@ function compose_email() {
     fetch('/emails', {
       method: 'POST',
       body: JSON.stringify({
-        sender: sender,
         recipients: recipients,
         subject: subject,
         body: body
@@ -57,7 +56,6 @@ function listArchieveEmail(mailbox) {
     fetch(`/emails/${mailbox}`)
     .then(response => response.json())
     .then(emails => {
-      console.log(emails);
       emails.forEach(element => {
         const email = renderEmailView(element);
         email.className = 'email-item';
@@ -164,6 +162,7 @@ function load_mailbox(mailbox) {
     .then(response => response.json())
     .then(emails => {
       emails.forEach(element => {
+        console.log(element)
         const email = renderEmailView(element);
         email.className = 'email-item';
         document.querySelector('#emails-view').append(email);
@@ -183,10 +182,13 @@ function load_mailbox(mailbox) {
               <span>${emailDetails.timestamp}</span><br>
               <button id="reply-button">Reply</button>
               `;
-          })
-        });
+            })
+          });
+        })
       })
-    })
+      .catch(error => {
+        console.error('Error fetching sent emails:', error);
+      });
   }
 
   
