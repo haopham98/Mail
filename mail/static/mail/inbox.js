@@ -118,6 +118,16 @@ function load_mailbox(mailbox) {
       emails.forEach(element => {
         const email = renderEmailView(element);
         email.className = 'email-item';
+        email.addEventListener('click', () => {
+          // Mark email as read when clicked
+          fetch(`/emails/${element.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+              read: true
+            })
+          })
+        });
+        
         document.querySelector('#emails-view').append(email);
         // Add click event to each email to load email details
         email.addEventListener('click', () => {
