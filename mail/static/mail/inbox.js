@@ -51,40 +51,6 @@ function compose_email() {
   });
 }
 
-function listArchieveEmail(mailbox) {
-    // Fetch the email which is archived
-    // display list of emails
-    fetch(`/emails/${mailbox}`)
-    .then(response => response.json())
-    .then(emails => {
-      console.log(emails);
-      emails.forEach(element => {
-        const email = renderEmailView(element);
-        email.className = 'email-item';
-        document.querySelector('#emails-view').append(email);
-        
-        // Add click event to each email to load email details
-        email.addEventListener('click', () => {
-          // Load the email details
-          fetch(`/emails/${element.id}`)
-          .then(response => response.json())
-          .then(emailDetails => {
-            // Show email details
-            
-            document.querySelector('#emails-view').innerHTML = `
-              <h3> Subject: ${emailDetails.subject}</h3>
-              <h4> Form: ${emailDetails.sender}</h4>
-              <h4> Body: </h4> <br>
-              <p class='email-body'>${emailDetails.body}</p>
-              <span>${emailDetails.timestamp}</span><br>
-              <button id="reply-button">Reply</button>
-              <button id="archive-button">${emailDetails.archived ? 'Unarchive' : 'Archive'}</button>
-              `;
-          })
-        })
-      })
-    })
-}
 
 
 function renderEmailView(email) {
@@ -119,16 +85,25 @@ function load_mailbox(mailbox) {
     emails.forEach(element => {
       const email = document.createElement('div');
       email.className = 'email-item';
-      email.innerHTML = `<h4>${element.subject}</h4> <strong>${element.sender}</strong><br> <span>${element.timestamp}</span>`;
+      email.innerHTML = `
+      <h4 id='email-subject'>${element.subject}</h4>
+      <strong>${element.sender}</strong>
+      <br>
+      <span>${element.timestamp}</span>
+      <button class='btn btn-outline-secondary archive-btn'>${element.archived ? 'Unarchive' : 'Archive'}</button>
+      `;
       
       if (mailbox === 'inbox' && element.read) {
         //email.className = 'read-email-item';
         email.className = 'email-item read-email-item';
       }
-      
+      if (mailbox === 'sent') {
+        email.removeChild(email.querySelector('.archive-btn'));
+      }
       document.querySelector('#emails-view').append(email);
       // Add click event to each email
       // to load email details
+
       email.addEventListener('click', () => {
         // Load the email details
         fetch(`/emails/${element.id}`)
@@ -157,6 +132,30 @@ function load_mailbox(mailbox) {
           console.error('Error marking email as read:', error);
         });
       });
+
+      // Add click event to archive button
+      if (mailbox != 'sent'){
+        const archiveButton = email.querySelector('.archive-btn');
+        archiveButton.addEventListener('click', () => {
+          // Prevent the default action of the button
+          event.stopPropagation();
+
+          // Toggle archive status
+          fetch(`/emails/${element.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+              archived: !element.archived
+            })
+          })
+          .then((message) => {
+            load_mailbox(mailbox); // Reload the mailbox after archiving/unarchiving
+            alert(`Email ${element.archived ? 'unarchived' : 'archived'} successfully!`);
+          })
+        });
+      }
+
+
+
     })
   })
 }

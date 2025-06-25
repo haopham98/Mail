@@ -3,7 +3,7 @@ textarea {
 }
 
 .email-item {
-    display: block;
+    display: block;;
     padding: 10px;
     border: 1px solid #000;
     margin: 10px;
@@ -25,7 +25,7 @@ textarea {
     border: 1px solid #000;
     margin: 10px;
     border-radius: 5px;
-    background-color: #494c4e; /* Light blue background for read emails */
+    background-color: #b0b4b6; /* Light blue background for read emails */
 }
 
 
@@ -52,4 +52,10 @@ textarea {
     padding: 10px;
     border-radius: 5px;
     width: 100%;
+}
+
+.archive-btn {
+    /* Style for the archive button */
+    background-color: #bf7105; /* Bootstrap warning color */
+    align-items: right;
 }
