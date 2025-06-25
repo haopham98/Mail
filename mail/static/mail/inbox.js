@@ -61,11 +61,20 @@ function load_mailbox(mailbox) {
   .then(response => response.json())
    // check data in emails
   .then(emails => {
-    // Loop through emails and displa them
+    // sort emails by timestamp
+    emails.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    // Loop through emails and display them
     emails.forEach(element => {
       const email = document.createElement('div');
       email.className = 'email-item';
       email.innerHTML = `<h4>${element.subject}</h4> <strong>${element.sender}</strong><br> <span>${element.timestamp}</span>`;
+      
+      if (mailbox === 'inbox' && element.read) {
+        //email.className = 'read-email-item';
+        email.className = 'email-item read-email-item';
+      }
+      
+      
       document.querySelector('#emails-view').append(email);
       // Add click event to each email
       // to load email details

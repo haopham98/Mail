@@ -19,6 +19,16 @@ textarea {
     background-color: #17e7e0;
 }
 
+.read-email-item {
+    display: block;
+    padding: 10px;
+    border: 1px solid #000;
+    margin: 10px;
+    border-radius: 5px;
+    background-color: #494c4e; /* Light blue background for read emails */
+}
+
+
 .user-email {
     font-size: 1.5em;
     color: #0e57f5;
