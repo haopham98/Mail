@@ -146,10 +146,19 @@ function load_mailbox(mailbox) {
             `;
         })
       })
+      email.addEventListener('click', () => {
+        fetch(`/emails/${element.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            read: true
+          })
+        })
+        .catch(error => {
+          console.error('Error marking email as read:', error);
+        });
+      });
     })
-  }
-
-  
+  })
 }
 
 
