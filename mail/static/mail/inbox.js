@@ -74,7 +74,6 @@ function load_mailbox(mailbox) {
         email.className = 'email-item read-email-item';
       }
       
-      
       document.querySelector('#emails-view').append(email);
       // Add click event to each email
       // to load email details
@@ -85,10 +84,11 @@ function load_mailbox(mailbox) {
         .then(emailDetails => {
           // Show email details
           document.querySelector('#emails-view').innerHTML = `
-            <h3> Subject: ${emailDetails.subject}</h3>
-            <h4> Form: ${emailDetails.sender}</h4>
-            <h4> Body: </h4> <br>
-            <p class='email-body'>${emailDetails.body}</p>
+            <h4> <strong>Subject: </strong> ${emailDetails.subject}</h3>
+            <h5><strong>From: </strong> ${emailDetails.sender}</h5>
+            <h5><strong>To: </strong>${emailDetails.recipients.join(', ')}</h5>
+            <h5> <strong>Content: </strong> </h5>
+            <textarea class='textarea-custom'>${emailDetails.body}</textarea>
             <span>${emailDetails.timestamp}</span><br>
             <button id="reply-button">Reply</button>
             `;

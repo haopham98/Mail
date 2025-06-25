@@ -45,3 +45,11 @@ textarea {
     border-radius: 5px;
     width: 100%;
 }
+
+.textarea-custom {
+    border: 1px solid #17e7e0;
+    height: 3em;
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+}
