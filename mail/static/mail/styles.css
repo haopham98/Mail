@@ -3,12 +3,15 @@ textarea {
 }
 
 .email-item {
-    display: block;;
+    position: relative;
+    display: block;
     padding: 10px;
     border: 1px solid #000;
     margin: 10px;
     border-radius: 5px;
 }
+
+
 .email-item:focus {
     outline: none;
     border-color: #067975;
@@ -55,7 +58,8 @@ textarea {
 }
 
 .archive-btn {
-    /* Style for the archive button */
-    background-color: #bf7105; /* Bootstrap warning color */
-    align-items: right;
-}
+    background-color: #bf7105; 
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+} 

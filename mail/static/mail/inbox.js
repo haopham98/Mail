@@ -115,9 +115,9 @@ function load_mailbox(mailbox) {
             <h5><strong>From: </strong> ${emailDetails.sender}</h5>
             <h5><strong>To: </strong>${emailDetails.recipients.join(', ')}</h5>
             <h5> <strong>Content: </strong> </h5>
-            <textarea class='textarea-custom'>${emailDetails.body}</textarea>
+            <textarea class='textarea-custom' readonly>${emailDetails.body}</textarea>
             <span>${emailDetails.timestamp}</span><br>
-            <button id="reply-button">Reply</button>
+            <button id="reply-button" class='btn btn-outline-info'>Reply</button>
             `;
         })
       })
