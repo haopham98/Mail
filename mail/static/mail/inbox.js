@@ -62,7 +62,17 @@ function renderEmailView(email) {
     <h5>${email.sender}</h5>
     <span>${email.timestamp}</span>
   `;
-  return emailElement
+  document.getElementById('reply-mail').appendChild(emailElement);
+}
+
+function renderEmailReply(email) {
+  // render email reply view
+  document.querySelector("#compose-recipients").value = email.sender;
+  document.querySelector('#compose-subject').value = email.subject.startsWith('Re: ') ? email.subject : `Re: ${email.subject}`;
+  document.querySelector('#compose-body').value = `On ${email.timestamp} ${email.sender} wrote:\n${email.body}\n\n`;
+  document.querySelector('#compose-view').style.display = 'block';
+  document.querySelector('#emails-view').style.display = 'none';
+  
 }
 
 function load_mailbox(mailbox) {
@@ -118,48 +128,74 @@ function load_mailbox(mailbox) {
             <textarea class='textarea-custom' readonly>${emailDetails.body}</textarea>
             <span>${emailDetails.timestamp}</span><br>
             <button id="reply-button" class='btn btn-outline-info'>Reply</button>
-            `;
+            `;  
         })
-      })
-      email.addEventListener('click', () => {
-        fetch(`/emails/${element.id}`, {
-          method: 'PUT',
-          body: JSON.stringify({
-            read: true
-          })
+        // Add reply button functionality
+        .then(() => {
+          document.querySelector('#reply-button').addEventListener('click', () => {
+            // Clear previous reply view
+            document.querySelector('#emails-view').innerHTML = '';
+            // Render reply view
+            renderEmailReply(element);
+            // send reply email
+            document.querySelector('#compose-form').addEventListener('submit', (event) => {
+              event.preventDefault();
+
+              const replySender = document.querySelector('#compose-sender').value;
+              const replyRecipients = document.querySelector('#compose-recipients').value;
+              const replySubject = document.querySelector('#compose-subject').value;
+              const replyBody = document.querySelector('#compose-body').value;
+
+              fetch('/emails', {
+                method: 'POST',
+                body: JSON.stringify({
+                  sender: replySender,
+                  recipients: replyRecipients,
+                  subject: replySubject,
+                  body: replyBody
+                })
+              })
+              .then(() => {
+                load_mailbox('sent');
+                console.log('Reply sent successfully!');
+              })
+            })
+          });
         })
-        .catch(error => {
-          console.error('Error marking email as read:', error);
-        });
-      });
-
-      // Add click event to archive button
-      if (mailbox != 'sent'){
-        const archiveButton = email.querySelector('.archive-btn');
-        archiveButton.addEventListener('click', () => {
-          // Prevent the default action of the button
-          event.stopPropagation();
-
-          // Toggle archive status
+        email.addEventListener('click', () => {
           fetch(`/emails/${element.id}`, {
             method: 'PUT',
             body: JSON.stringify({
-              archived: !element.archived
+              read: true
             })
           })
-          .then((message) => {
-            load_mailbox(mailbox); // Reload the mailbox after archiving/unarchiving
-            alert(`Email ${element.archived ? 'unarchived' : 'archived'} successfully!`);
-          })
+          .catch(error => {
+            console.error('Error marking email as read:', error);
+          });
         });
-      }
 
+      // Add click event to archive button
+        if (mailbox != 'sent'){
+          const archiveButton = email.querySelector('.archive-btn');
+          archiveButton.addEventListener('click', () => {
+            // Prevent the default action of the button
+            event.stopPropagation();
 
-
+            // Toggle archive status
+            fetch(`/emails/${element.id}`, {
+              method: 'PUT',
+              body: JSON.stringify({
+                archived: !element.archived
+              })
+            })
+            .then((message) => {
+              load_mailbox(mailbox); // Reload the mailbox after archiving/unarchiving
+              alert(`Email ${element.archived ? 'unarchived' : 'archived'} successfully!`);
+            })
+          });
+        }
+      })
     })
   })
 }
-
-
-
 
