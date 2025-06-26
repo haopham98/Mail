@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // By default, load the inbox
   load_mailbox('inbox');
+
+
+
 });
 
 function compose_email() {
@@ -26,6 +29,7 @@ function compose_email() {
     event.preventDefault(); // prevent reload page
 
     // get value in form
+    const sender = document.querySelector('#compose-sender').value;
     const recipients = document.querySelector('#compose-recipients').value;
     const subject = document.querySelector('#compose-subject').value;
     const body = document.querySelector('#compose-body').value;
@@ -34,17 +38,41 @@ function compose_email() {
     fetch('/emails', {
       method: 'POST',
       body: JSON.stringify({
+        sender: sender,
         recipients: recipients,
         subject: subject,
         body: body
       })
     })
-    .then(response => response.json())
-    .then(result => {
-      console.log(result)
-    })
-    
+    .then(load_mailbox('sent')) // Load sent mailbox after sending email
+    .catch(error => {
+      console.error('Error sending email:', error);
+    });
   });
+}
+
+
+
+function renderEmailView(email) {
+  // render email view
+  const emailElement = document.createElement('div');
+  emailElement.className = 'email-item';
+  emailElement.innerHTML = `
+    <h4><strong>${email.subject}</strong></h4>
+    <h5>${email.sender}</h5>
+    <span>${email.timestamp}</span>
+  `;
+  document.getElementById('reply-mail').appendChild(emailElement);
+}
+
+function renderEmailReply(email) {
+  // render email reply view
+  document.querySelector("#compose-recipients").value = email.sender;
+  document.querySelector('#compose-subject').value = email.subject.startsWith('Re: ') ? email.subject : `Re: ${email.subject}`;
+  document.querySelector('#compose-body').value = `On ${email.timestamp} ${email.sender} wrote:\n${email.body}\n\n`;
+  document.querySelector('#compose-view').style.display = 'block';
+  document.querySelector('#emails-view').style.display = 'none';
+  
 }
 
 function load_mailbox(mailbox) {
@@ -67,16 +95,25 @@ function load_mailbox(mailbox) {
     emails.forEach(element => {
       const email = document.createElement('div');
       email.className = 'email-item';
-      email.innerHTML = `<h4>${element.subject}</h4> <strong>${element.sender}</strong><br> <span>${element.timestamp}</span>`;
+      email.innerHTML = `
+      <h4 id='email-subject'>${element.subject}</h4>
+      <strong>${element.sender}</strong>
+      <br>
+      <span>${element.timestamp}</span>
+      <button class='btn btn-outline-secondary archive-btn'>${element.archived ? 'Unarchive' : 'Archive'}</button>
+      `;
       
       if (mailbox === 'inbox' && element.read) {
         //email.className = 'read-email-item';
         email.className = 'email-item read-email-item';
       }
-      
+      if (mailbox === 'sent') {
+        email.removeChild(email.querySelector('.archive-btn'));
+      }
       document.querySelector('#emails-view').append(email);
       // Add click event to each email
       // to load email details
+
       email.addEventListener('click', () => {
         // Load the email details
         fetch(`/emails/${element.id}`)
@@ -88,13 +125,77 @@ function load_mailbox(mailbox) {
             <h5><strong>From: </strong> ${emailDetails.sender}</h5>
             <h5><strong>To: </strong>${emailDetails.recipients.join(', ')}</h5>
             <h5> <strong>Content: </strong> </h5>
-            <textarea class='textarea-custom'>${emailDetails.body}</textarea>
+            <textarea class='textarea-custom' readonly>${emailDetails.body}</textarea>
             <span>${emailDetails.timestamp}</span><br>
-            <button id="reply-button">Reply</button>
-            `;
+            <button id="reply-button" class='btn btn-outline-info'>Reply</button>
+            `;  
         })
+        // Add reply button functionality
+        .then(() => {
+          document.querySelector('#reply-button').addEventListener('click', () => {
+            // Clear previous reply view
+            document.querySelector('#emails-view').innerHTML = '';
+            // Render reply view
+            renderEmailReply(element);
+            // send reply email
+            document.querySelector('#compose-form').addEventListener('submit', (event) => {
+              event.preventDefault();
+
+              const replySender = document.querySelector('#compose-sender').value;
+              const replyRecipients = document.querySelector('#compose-recipients').value;
+              const replySubject = document.querySelector('#compose-subject').value;
+              const replyBody = document.querySelector('#compose-body').value;
+
+              fetch('/emails', {
+                method: 'POST',
+                body: JSON.stringify({
+                  sender: replySender,
+                  recipients: replyRecipients,
+                  subject: replySubject,
+                  body: replyBody
+                })
+              })
+              .then(() => {
+                load_mailbox('sent');
+                console.log('Reply sent successfully!');
+              })
+            })
+          });
+        })
+        email.addEventListener('click', () => {
+          fetch(`/emails/${element.id}`, {
+            method: 'PUT',
+            body: JSON.stringify({
+              read: true
+            })
+          })
+          .catch(error => {
+            console.error('Error marking email as read:', error);
+          });
+        });
+
+      // Add click event to archive button
+        if (mailbox != 'sent'){
+          const archiveButton = email.querySelector('.archive-btn');
+          archiveButton.addEventListener('click', () => {
+            // Prevent the default action of the button
+            event.stopPropagation();
+
+            // Toggle archive status
+            fetch(`/emails/${element.id}`, {
+              method: 'PUT',
+              body: JSON.stringify({
+                archived: !element.archived
+              })
+            })
+            .then((message) => {
+              load_mailbox(mailbox); // Reload the mailbox after archiving/unarchiving
+              alert(`Email ${element.archived ? 'unarchived' : 'archived'} successfully!`);
+            })
+          });
+        }
       })
-    });
+    })
   })
 }
 

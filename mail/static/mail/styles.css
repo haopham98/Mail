@@ -1,17 +1,20 @@
 textarea {
-    min-height: 400px;
+    min-height: 300px;
 }
 
 .email-item {
+    position: relative;
     display: block;
     padding: 10px;
     border: 1px solid #000;
     margin: 10px;
     border-radius: 5px;
 }
+
+
 .email-item:focus {
     outline: none;
-    border-color: #17e7e0;
+    border-color: #067975;
     box-shadow: 0 0 5px rgba(23, 231, 224, 0.5);
 }
 
@@ -25,7 +28,7 @@ textarea {
     border: 1px solid #000;
     margin: 10px;
     border-radius: 5px;
-    background-color: #494c4e; /* Light blue background for read emails */
+    background-color: #b0b4b6; /* Light blue background for read emails */
 }
 
 
@@ -53,3 +56,10 @@ textarea {
     border-radius: 5px;
     width: 100%;
 }
+
+.archive-btn {
+    background-color: #bf7105; 
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+} 
